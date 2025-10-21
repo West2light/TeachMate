@@ -5,7 +5,8 @@ import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { translations, Language } from '../translations';
-import { GraduationCap, Github } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
+import { ADMIN_CREDENTIALS } from '../data/mockData';
 
 interface LoginRegistrationProps {
   onLogin: (userData: {
@@ -13,10 +14,11 @@ interface LoginRegistrationProps {
     email: string;
     nationality: 'Japanese' | 'Vietnamese';
   }) => void;
+  onAdminLogin?: () => void;
   language: Language;
 }
 
-export function LoginRegistration({ onLogin, language }: LoginRegistrationProps) {
+export function LoginRegistration({ onLogin, onAdminLogin, language }: LoginRegistrationProps) {
   const t = translations[language];
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -31,7 +33,15 @@ export function LoginRegistration({ onLogin, language }: LoginRegistrationProps)
     e.preventDefault();
 
     if (isLogin) {
-      // Mock login
+      // Check for admin credentials
+      if (formData.email === ADMIN_CREDENTIALS.username && formData.password === ADMIN_CREDENTIALS.password) {
+        if (onAdminLogin) {
+          onAdminLogin();
+          return;
+        }
+      }
+
+      // Mock login for regular users
       onLogin({
         name: 'Demo User',
         email: formData.email,
@@ -55,18 +65,13 @@ export function LoginRegistration({ onLogin, language }: LoginRegistrationProps)
     }
   };
 
-  const handleSocialLogin = (provider: 'google' | 'github' | 'facebook') => {
+  const handleSocialLogin = (provider: 'google' | 'facebook') => {
     // Mock social login - in production, this would redirect to OAuth provider
     const mockUserData = {
       google: {
         name: 'Google User',
         email: 'user@gmail.com',
         nationality: 'Japanese' as const
-      },
-      github: {
-        name: 'GitHub User',
-        email: 'user@github.com',
-        nationality: 'Vietnamese' as const
       },
       facebook: {
         name: 'Facebook User',
@@ -147,7 +152,7 @@ export function LoginRegistration({ onLogin, language }: LoginRegistrationProps)
                 <Label htmlFor="nationality">{t.nationality}</Label>
                 <Select
                   value={formData.nationality}
-                  onValueChange={(value) => setFormData({ ...formData, nationality: value as 'Japanese' | 'Vietnamese' })}
+                  onValueChange={(value: string) => setFormData({ ...formData, nationality: value as 'Japanese' | 'Vietnamese' })}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder={t.selectNationality} />
@@ -207,15 +212,7 @@ export function LoginRegistration({ onLogin, language }: LoginRegistrationProps)
               {t.continueWithGoogle}
             </Button>
 
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleSocialLogin('github')}
-              className="w-full border-2 hover:bg-gray-50"
-            >
-              <Github className="w-5 h-5 mr-2" />
-              {t.continueWithGithub}
-            </Button>
+
 
             <Button
               type="button"

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Teacher, Message } from '../types';
-import { 
-  Input as AntInput, 
-  Button as AntButton, 
+import {
+  Input as AntInput,
+  Button as AntButton,
   Avatar as AntAvatar,
   Drawer,
   List,
@@ -18,8 +18,8 @@ import {
   DatePicker,
   Progress
 } from 'antd';
-import { 
-  SendOutlined, 
+import {
+  SendOutlined,
   UploadOutlined,
   SmileOutlined,
   LeftOutlined,
@@ -106,11 +106,11 @@ const getAvatarColor = (id: string) => {
   return colors[index];
 };
 
-export function GroupChatInterface({ 
-  currentUser, 
-  selectedGroup, 
+export function GroupChatInterface({
+  currentUser,
+  selectedGroup,
   onBack,
-  language 
+  language
 }: GroupChatInterfaceProps) {
   const t = translations[language];
   const [infoDrawerVisible, setInfoDrawerVisible] = useState(false);
@@ -122,6 +122,20 @@ export function GroupChatInterface({
   );
   const [tempDescription, setTempDescription] = useState(groupDescription);
   const [showQRModal, setShowQRModal] = useState(false);
+
+  // Upload & Appointment Modals
+  const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [appointmentModalVisible, setAppointmentModalVisible] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState<any>(null);
+  const [appointmentTime, setAppointmentTime] = useState('12:00');
+  const [appointmentTitle, setAppointmentTitle] = useState('');
+  const [appointmentDescription, setAppointmentDescription] = useState('');
+
+  // Create Poll Modal
+  const [createPollModalVisible, setCreatePollModalVisible] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState<string[]>(['', '']);
+  const [pollAllowMultiple, setPollAllowMultiple] = useState(false);
 
   const [messages, setMessages] = useState<GroupMessage[]>([
     {
@@ -342,6 +356,101 @@ export function GroupChatInterface({
     }
   };
 
+  const handleUploadFile = () => {
+    const fileMessage: GroupMessage = {
+      id: Date.now().toString(),
+      senderId: currentUser.id,
+      receiverId: selectedGroup.id,
+      content: language === 'ja' ? 'ファイルを共有しました' : 'Đã chia sẻ tệp tin',
+      senderName: currentUser.name,
+      senderAvatar: currentUser.avatar,
+      timestamp: new Date(),
+      type: 'slide',
+      slideUrl: 'example-file.pdf'
+    };
+
+    setMessages([...messages, fileMessage]);
+    setUploadModalVisible(false);
+    toast.success(language === 'ja' ? 'ファイルをアップロードしました' : 'Đã tải lên tệp tin');
+  };
+
+  const handleCreateAppointment = () => {
+    if (!appointmentDate || !appointmentTitle.trim()) {
+      toast.error(language === 'ja' ? '日時とタイトルを入力してください' : 'Vui lòng nhập ngày giờ và tiêu đề');
+      return;
+    }
+
+    const appointmentMessage: GroupMessage = {
+      id: Date.now().toString(),
+      senderId: currentUser.id,
+      receiverId: selectedGroup.id,
+      content: `📅 ${language === 'ja' ? '予定' : 'Lịch hẹn'}: ${appointmentTitle}\n${appointmentDescription}\n📆 ${appointmentDate.format('DD/MM/YYYY')} ${appointmentTime}`,
+      senderName: currentUser.name,
+      senderAvatar: currentUser.avatar,
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    setMessages([...messages, appointmentMessage]);
+    toast.success(
+      language === 'ja'
+        ? `予定を設定しました: ${appointmentDate.format('YYYY/MM/DD')} ${appointmentTime}`
+        : `Đã đặt lịch hẹn: ${appointmentDate.format('DD/MM/YYYY')} ${appointmentTime}`
+    );
+
+    setAppointmentModalVisible(false);
+    setAppointmentDate(null);
+    setAppointmentTime('12:00');
+    setAppointmentTitle('');
+    setAppointmentDescription('');
+  };
+
+  const handleCreatePoll = () => {
+    if (!pollQuestion.trim()) {
+      toast.error(language === 'ja' ? '質問を入力してください' : 'Vui lòng nhập câu hỏi');
+      return;
+    }
+
+    const validOptions = pollOptions.filter(opt => opt.trim());
+    if (validOptions.length < 2) {
+      toast.error(language === 'ja' ? '少なくとも2つの選択肢を入力してください' : 'Vui lòng nhập ít nhất 2 lựa chọn');
+      return;
+    }
+
+    const pollMessage: GroupMessage = {
+      id: Date.now().toString(),
+      senderId: currentUser.id,
+      receiverId: selectedGroup.id,
+      content: `📊 ${language === 'ja' ? 'アンケート' : 'Bình chọn'}: ${pollQuestion}\n${validOptions.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}`,
+      senderName: currentUser.name,
+      senderAvatar: currentUser.avatar,
+      timestamp: new Date(),
+      type: 'text'
+    };
+
+    setMessages([...messages, pollMessage]);
+    toast.success(language === 'ja' ? 'アンケートを作成しました' : 'Đã tạo bình chọn');
+
+    setCreatePollModalVisible(false);
+    setPollQuestion('');
+    setPollOptions(['', '']);
+    setPollAllowMultiple(false);
+  };
+
+  const handleAddPollOption = () => {
+    if (pollOptions.length < 6) {
+      setPollOptions([...pollOptions, '']);
+    } else {
+      toast.info(language === 'ja' ? '最大6つの選択肢まで追加できます' : 'Tối đa 6 lựa chọn');
+    }
+  };
+
+  const handleRemovePollOption = (index: number) => {
+    if (pollOptions.length > 2) {
+      setPollOptions(pollOptions.filter((_, i) => i !== index));
+    }
+  };
+
   const handleFileUpload = () => {
     toast.info(language === 'ja' ? 'ファイルアップロード機能を準備中です' : 'Tính năng tải file đang được phát triển');
   };
@@ -399,8 +508,8 @@ export function GroupChatInterface({
       return;
     }
     toast.success(
-      language === 'ja' 
-        ? `${selectedMembersToAdd.length}人のメンバーを追加しました` 
+      language === 'ja'
+        ? `${selectedMembersToAdd.length}人のメンバーを追加しました`
         : `Đã thêm ${selectedMembersToAdd.length} thành viên`
     );
     setAddMemberModalVisible(false);
@@ -409,9 +518,9 @@ export function GroupChatInterface({
   };
 
   const toggleMemberSelection = (memberId: string) => {
-    setSelectedMembersToAdd(prev => 
-      prev.includes(memberId) 
-        ? prev.filter(id => id !== memberId) 
+    setSelectedMembersToAdd(prev =>
+      prev.includes(memberId)
+        ? prev.filter(id => id !== memberId)
         : [...prev, memberId]
     );
   };
@@ -446,8 +555,8 @@ export function GroupChatInterface({
             className="text-white hover:bg-blue-700"
           />
           <div className="flex items-center gap-3">
-            <AntAvatar 
-              size={48} 
+            <AntAvatar
+              size={48}
               src={selectedGroup.avatar}
               icon={<TeamOutlined />}
               style={{ backgroundColor: '#1890ff' }}
@@ -475,22 +584,22 @@ export function GroupChatInterface({
         <div className="space-y-4 max-w-4xl mx-auto">
           {messages.map((message) => {
             const isCurrentUser = message.senderId === currentUser.id;
-            
+
             return (
               <div
                 key={message.id}
                 className={`flex gap-3 ${isCurrentUser ? 'flex-row-reverse' : 'flex-row'}`}
               >
                 {!isCurrentUser && (
-                  <AntAvatar 
-                    size={36} 
+                  <AntAvatar
+                    size={36}
                     src={message.senderAvatar}
                     style={{ backgroundColor: getAvatarColor(message.senderId) }}
                   >
                     {message.senderName.charAt(0).toUpperCase()}
                   </AntAvatar>
                 )}
-                
+
                 <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'} max-w-[70%]`}>
                   {!isCurrentUser && (
                     <Text strong className="text-xs text-gray-600 mb-1 px-1">
@@ -498,18 +607,17 @@ export function GroupChatInterface({
                     </Text>
                   )}
                   <div
-                    className={`rounded-2xl px-4 py-2 ${
-                      isCurrentUser
+                    className={`rounded-2xl px-4 py-2 ${isCurrentUser
                         ? 'bg-blue-600 text-white rounded-br-sm'
                         : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'
-                    }`}
+                      }`}
                   >
                     <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                   </div>
                   <Text className="text-xs text-gray-400 mt-1 px-1">
-                    {message.timestamp.toLocaleTimeString('ja-JP', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
+                    {message.timestamp.toLocaleTimeString('ja-JP', {
+                      hour: '2-digit',
+                      minute: '2-digit'
                     })}
                   </Text>
                 </div>
@@ -533,12 +641,26 @@ export function GroupChatInterface({
             <Tooltip title={language === 'ja' ? 'ファイル' : 'File'}>
               <AntButton
                 icon={<UploadOutlined />}
-                onClick={handleFileUpload}
+                onClick={() => setUploadModalVisible(true)}
+                className="border-blue-300 text-blue-600 hover:bg-blue-50"
+              />
+            </Tooltip>
+            <Tooltip title={language === 'ja' ? '予定を設定' : 'Đặt lịch hẹn'}>
+              <AntButton
+                icon={<CalendarOutlined />}
+                onClick={() => setAppointmentModalVisible(true)}
+                className="border-blue-300 text-blue-600 hover:bg-blue-50"
+              />
+            </Tooltip>
+            <Tooltip title={language === 'ja' ? 'アンケート作成' : 'Tạo bình chọn'}>
+              <AntButton
+                icon={<BarChartOutlined />}
+                onClick={() => setCreatePollModalVisible(true)}
                 className="border-blue-300 text-blue-600 hover:bg-blue-50"
               />
             </Tooltip>
           </div>
-          
+
           <TextArea
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
@@ -552,7 +674,7 @@ export function GroupChatInterface({
             autoSize={{ minRows: 1, maxRows: 4 }}
             className="flex-1 border-blue-300 focus:border-blue-500"
           />
-          
+
           <AntButton
             type="primary"
             icon={<SendOutlined />}
@@ -564,6 +686,195 @@ export function GroupChatInterface({
           </AntButton>
         </div>
       </div>
+
+      {/* Upload File Modal */}
+      <Modal
+        title={
+          <Space>
+            <UploadOutlined />
+            <Text strong>{language === 'ja' ? 'ファイルをアップロード' : 'Tải lên tệp tin'}</Text>
+          </Space>
+        }
+        open={uploadModalVisible}
+        onCancel={() => setUploadModalVisible(false)}
+        onOk={handleUploadFile}
+        okText={language === 'ja' ? 'アップロード' : 'Tải lên'}
+        cancelText={language === 'ja' ? 'キャンセル' : 'Hủy'}
+        centered
+      >
+        <div className="py-4">
+          <Text className="block mb-3 text-gray-600">
+            {language === 'ja'
+              ? 'グループメンバーとファイルを共有'
+              : 'Chia sẻ tệp với thành viên nhóm'}
+          </Text>
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.png,.zip"
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+          <Text type="secondary" className="text-xs block mt-2">
+            {language === 'ja'
+              ? '対応形式: PDF, Word, PowerPoint, 画像, ZIP (最大25MB)'
+              : 'Định dạng: PDF, Word, PowerPoint, Ảnh, ZIP (Tối đa 25MB)'}
+          </Text>
+        </div>
+      </Modal>
+
+      {/* Create Appointment Modal */}
+      <Modal
+        title={
+          <Space>
+            <CalendarOutlined />
+            <Text strong>{language === 'ja' ? '予定を設定' : 'Đặt lịch hẹn nhóm'}</Text>
+          </Space>
+        }
+        open={appointmentModalVisible}
+        onCancel={() => {
+          setAppointmentModalVisible(false);
+          setAppointmentDate(null);
+          setAppointmentTime('12:00');
+          setAppointmentTitle('');
+          setAppointmentDescription('');
+        }}
+        onOk={handleCreateAppointment}
+        okText={language === 'ja' ? '設定' : 'Đặt lịch'}
+        cancelText={language === 'ja' ? 'キャンセル' : 'Hủy'}
+        width={550}
+        centered
+      >
+        <div className="py-4 space-y-4">
+          <div>
+            <Text strong className="block mb-2">
+              {language === 'ja' ? 'タイトル' : 'Tiêu đề'} <Text type="danger">*</Text>
+            </Text>
+            <AntInput
+              placeholder={language === 'ja' ? 'ミーティングのタイトル' : 'Tiêu đề cuộc họp'}
+              value={appointmentTitle}
+              onChange={(e) => setAppointmentTitle(e.target.value)}
+              size="large"
+            />
+          </div>
+
+          <div>
+            <Text strong className="block mb-2">
+              {language === 'ja' ? '日付' : 'Ngày'} <Text type="danger">*</Text>
+            </Text>
+            <DatePicker
+              value={appointmentDate}
+              onChange={setAppointmentDate}
+              format="DD/MM/YYYY"
+              placeholder={language === 'ja' ? '日付を選択' : 'Chọn ngày'}
+              style={{ width: '100%' }}
+              size="large"
+            />
+          </div>
+
+          <div>
+            <Text strong className="block mb-2">
+              {language === 'ja' ? '時刻' : 'Giờ'}
+            </Text>
+            <AntInput
+              type="time"
+              value={appointmentTime}
+              onChange={(e) => setAppointmentTime(e.target.value)}
+              size="large"
+            />
+          </div>
+
+          <div>
+            <Text strong className="block mb-2">
+              {language === 'ja' ? '説明' : 'Mô tả'}
+            </Text>
+            <TextArea
+              placeholder={language === 'ja' ? '詳細を入力...' : 'Nhập mô tả chi tiết...'}
+              value={appointmentDescription}
+              onChange={(e) => setAppointmentDescription(e.target.value)}
+              rows={4}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Create Poll Modal */}
+      <Modal
+        title={
+          <Space>
+            <BarChartOutlined />
+            <Text strong>{language === 'ja' ? 'アンケートを作成' : 'Tạo bình chọn'}</Text>
+          </Space>
+        }
+        open={createPollModalVisible}
+        onCancel={() => {
+          setCreatePollModalVisible(false);
+          setPollQuestion('');
+          setPollOptions(['', '']);
+          setPollAllowMultiple(false);
+        }}
+        onOk={handleCreatePoll}
+        okText={language === 'ja' ? '作成' : 'Tạo'}
+        cancelText={language === 'ja' ? 'キャンセル' : 'Hủy'}
+        width={600}
+        centered
+      >
+        <div className="py-4 space-y-4">
+          <div>
+            <Text strong className="block mb-2">
+              {language === 'ja' ? '質問' : 'Câu hỏi'} <Text type="danger">*</Text>
+            </Text>
+            <AntInput
+              placeholder={language === 'ja' ? '質問を入力してください' : 'Nhập câu hỏi bình chọn'}
+              value={pollQuestion}
+              onChange={(e) => setPollQuestion(e.target.value)}
+              size="large"
+            />
+          </div>
+
+          <div>
+            <Text strong className="block mb-2">
+              {language === 'ja' ? '選択肢' : 'Các lựa chọn'} <Text type="danger">*</Text>
+            </Text>
+            <Space direction="vertical" style={{ width: '100%' }}>
+              {pollOptions.map((option, index) => (
+                <Space.Compact key={index} style={{ width: '100%' }}>
+                  <AntInput
+                    placeholder={`${language === 'ja' ? '選択肢' : 'Lựa chọn'} ${index + 1}`}
+                    value={option}
+                    onChange={(e) => {
+                      const newOptions = [...pollOptions];
+                      newOptions[index] = e.target.value;
+                      setPollOptions(newOptions);
+                    }}
+                  />
+                  {pollOptions.length > 2 && (
+                    <AntButton
+                      danger
+                      icon={<WarningOutlined />}
+                      onClick={() => handleRemovePollOption(index)}
+                    />
+                  )}
+                </Space.Compact>
+              ))}
+              <AntButton
+                type="dashed"
+                block
+                onClick={handleAddPollOption}
+                disabled={pollOptions.length >= 6}
+              >
+                + {language === 'ja' ? '選択肢を追加' : 'Thêm lựa chọn'}
+              </AntButton>
+            </Space>
+          </div>
+
+          <div className="bg-blue-50 p-3 rounded border border-blue-200">
+            <Text type="secondary" className="text-xs">
+              💡 {language === 'ja'
+                ? 'ヒント: アンケートは作成後、メンバーが投票できます'
+                : 'Mẹo: Sau khi tạo, thành viên có thể bình chọn'}
+            </Text>
+          </div>
+        </div>
+      </Modal>
 
       {/* Members Drawer */}
       <Drawer
@@ -583,17 +894,17 @@ export function GroupChatInterface({
             {groupMembers.length} {language === 'ja' ? 'メンバー' : 'thành viên'}
           </Text>
         </div>
-        
+
         <Divider className="my-3" />
-        
+
         <List
           dataSource={groupMembers}
           renderItem={(member) => (
             <List.Item className="hover:bg-gray-50 rounded px-2 cursor-pointer">
               <List.Item.Meta
                 avatar={
-                  <AntAvatar 
-                    size={40} 
+                  <AntAvatar
+                    size={40}
                     src={member.avatar}
                     style={{ backgroundColor: getAvatarColor(member.id) }}
                   >
@@ -627,14 +938,14 @@ export function GroupChatInterface({
       >
         {/* Group Avatar & Name */}
         <div className="text-center mb-6">
-          <AntAvatar 
-            size={80} 
+          <AntAvatar
+            size={80}
             icon={<TeamOutlined />}
             src={selectedGroup.avatar}
             style={{ backgroundColor: '#1890ff' }}
             className="mb-3"
           />
-          
+
           {editingGroupName ? (
             <Space.Compact style={{ width: '100%' }} className="mt-2">
               <AntInput
@@ -662,25 +973,25 @@ export function GroupChatInterface({
               </Tooltip>
             </div>
           )}
-          
+
           <Text type="secondary" className="block mt-1">
             {selectedGroup.memberCount} {language === 'ja' ? 'メンバー' : 'thành viên'}
           </Text>
         </div>
 
-        <Collapse 
-          defaultActiveKey={['1', '2', '3', '4', '5', '6']} 
+        <Collapse
+          defaultActiveKey={['1', '2', '3', '4', '5', '6']}
           ghost
           expandIconPosition="end"
         >
           {/* Group Description */}
-          <Panel 
+          <Panel
             header={
               <Space>
                 <InfoCircleOutlined />
                 <Text strong>{language === 'ja' ? 'グループの説明' : 'Mô tả nhóm'}</Text>
               </Space>
-            } 
+            }
             key="1"
           >
             {editingDescription ? (
@@ -708,9 +1019,9 @@ export function GroupChatInterface({
                 <Paragraph className="text-gray-700">
                   {groupDescription}
                 </Paragraph>
-                <AntButton 
-                  type="link" 
-                  size="small" 
+                <AntButton
+                  type="link"
+                  size="small"
                   icon={<EditOutlined />}
                   onClick={() => {
                     setEditingDescription(true);
@@ -724,18 +1035,18 @@ export function GroupChatInterface({
           </Panel>
 
           {/* Members */}
-          <Panel 
+          <Panel
             header={
               <Space>
                 <TeamOutlined />
                 <Text strong>{language === 'ja' ? 'メンバー' : 'Thành viên'}</Text>
                 <Tag color="blue">{groupMembers.length}</Tag>
               </Space>
-            } 
+            }
             key="2"
           >
-            <AntButton 
-              type="primary" 
+            <AntButton
+              type="primary"
               icon={<UserAddOutlined />}
               block
               className="mb-3"
@@ -743,7 +1054,7 @@ export function GroupChatInterface({
             >
               {language === 'ja' ? 'メンバーを追加' : 'Thêm thành viên'}
             </AntButton>
-            
+
             <List
               size="small"
               dataSource={groupMembers.slice(0, 5)}
@@ -751,8 +1062,8 @@ export function GroupChatInterface({
                 <List.Item className="hover:bg-gray-50 rounded px-2 cursor-pointer">
                   <List.Item.Meta
                     avatar={
-                      <AntAvatar 
-                        size={36} 
+                      <AntAvatar
+                        size={36}
                         src={member.avatar}
                         style={{ backgroundColor: getAvatarColor(member.id) }}
                       >
@@ -765,9 +1076,9 @@ export function GroupChatInterface({
                 </List.Item>
               )}
             />
-            <AntButton 
-              type="link" 
-              block 
+            <AntButton
+              type="link"
+              block
               onClick={() => {
                 setShowMemberDrawer(true);
                 setInfoDrawerVisible(false);
@@ -778,16 +1089,29 @@ export function GroupChatInterface({
           </Panel>
 
           {/* Group Events */}
-          <Panel 
+          <Panel
             header={
               <Space>
                 <CalendarOutlined />
                 <Text strong>{language === 'ja' ? 'グループイベント' : 'Sự kiện nhóm'}</Text>
                 <Tag color="green">{groupEvents.length}</Tag>
               </Space>
-            } 
+            }
             key="3"
           >
+            <AntButton
+              type="primary"
+              icon={<CalendarOutlined />}
+              block
+              className="mb-3"
+              onClick={() => {
+                setAppointmentModalVisible(true);
+                setInfoDrawerVisible(false);
+              }}
+            >
+              {language === 'ja' ? '新しい予定を作成' : 'Tạo lịch hẹn mới'}
+            </AntButton>
+
             {groupEvents.length === 0 ? (
               <Empty description={language === 'ja' ? 'イベントなし' : 'Chưa có sự kiện'} />
             ) : (
@@ -813,16 +1137,29 @@ export function GroupChatInterface({
           </Panel>
 
           {/* Group Polls */}
-          <Panel 
+          <Panel
             header={
               <Space>
                 <BarChartOutlined />
                 <Text strong>{language === 'ja' ? 'アンケート' : 'Bình chọn'}</Text>
                 <Tag color="purple">{groupPolls.length}</Tag>
               </Space>
-            } 
+            }
             key="4"
           >
+            <AntButton
+              type="primary"
+              icon={<BarChartOutlined />}
+              block
+              className="mb-3"
+              onClick={() => {
+                setCreatePollModalVisible(true);
+                setInfoDrawerVisible(false);
+              }}
+            >
+              {language === 'ja' ? '新しいアンケートを作成' : 'Tạo bình chọn mới'}
+            </AntButton>
+
             {groupPolls.length === 0 ? (
               <Empty description={language === 'ja' ? 'アンケートなし' : 'Chưa có bình chọn'} />
             ) : (
@@ -836,8 +1173,8 @@ export function GroupChatInterface({
                           <Text className="text-sm">{option.text}</Text>
                           <Text className="text-sm text-gray-500">{option.votes} {language === 'ja' ? '票' : 'phiếu'}</Text>
                         </div>
-                        <Progress 
-                          percent={Math.round((option.votes / poll.totalVotes) * 100)} 
+                        <Progress
+                          percent={Math.round((option.votes / poll.totalVotes) * 100)}
                           size="small"
                           strokeColor="#1890ff"
                         />
@@ -853,19 +1190,19 @@ export function GroupChatInterface({
           </Panel>
 
           {/* Shared Media */}
-          <Panel 
+          <Panel
             header={
               <Space>
                 <PictureOutlined />
                 <Text strong>{language === 'ja' ? '共有メディア' : 'Ảnh/Video/File'}</Text>
                 <Tag color="orange">{sharedMedia.length}</Tag>
               </Space>
-            } 
+            }
             key="5"
           >
             <Collapse ghost size="small">
-              <Panel 
-                header={`${language === 'ja' ? '画像・動画' : 'Ảnh/Video'} (${sharedMedia.filter(m => m.type === 'image' || m.type === 'video').length})`} 
+              <Panel
+                header={`${language === 'ja' ? '画像・動画' : 'Ảnh/Video'} (${sharedMedia.filter(m => m.type === 'image' || m.type === 'video').length})`}
                 key="5-1"
               >
                 <List
@@ -887,9 +1224,9 @@ export function GroupChatInterface({
                   )}
                 />
               </Panel>
-              
-              <Panel 
-                header={`${language === 'ja' ? 'ファイル' : 'File'} (${sharedMedia.filter(m => m.type === 'file').length})`} 
+
+              <Panel
+                header={`${language === 'ja' ? 'ファイル' : 'File'} (${sharedMedia.filter(m => m.type === 'file').length})`}
                 key="5-2"
               >
                 <List
@@ -911,9 +1248,9 @@ export function GroupChatInterface({
                   )}
                 />
               </Panel>
-              
-              <Panel 
-                header={`${language === 'ja' ? 'リンク' : 'Link'} (${sharedMedia.filter(m => m.type === 'link').length})`} 
+
+              <Panel
+                header={`${language === 'ja' ? 'リンク' : 'Link'} (${sharedMedia.filter(m => m.type === 'link').length})`}
                 key="5-3"
               >
                 <List
@@ -939,17 +1276,17 @@ export function GroupChatInterface({
           </Panel>
 
           {/* Group Settings */}
-          <Panel 
+          <Panel
             header={
               <Space>
                 <SettingOutlined />
                 <Text strong>{language === 'ja' ? '設定' : 'Thiết lập'}</Text>
               </Space>
-            } 
+            }
             key="6"
           >
             <Space direction="vertical" style={{ width: '100%' }}>
-              <AntButton 
+              <AntButton
                 icon={<QrcodeOutlined />}
                 block
                 onClick={handleShowQRCode}
@@ -957,7 +1294,7 @@ export function GroupChatInterface({
                 {language === 'ja' ? 'QRコードで参加' : 'Tham gia bằng QR'}
               </AntButton>
 
-              <AntButton 
+              <AntButton
                 icon={<CopyOutlined />}
                 block
                 onClick={handleCopyGroupLink}
@@ -965,27 +1302,27 @@ export function GroupChatInterface({
                 {language === 'ja' ? 'リンクで参加' : 'Tham gia bằng link'}
               </AntButton>
 
-              <AntButton 
+              <AntButton
                 icon={<BellOutlined />}
                 block
                 onClick={() => toast.info(language === 'ja' ? '通知設定機能を準備中です' : 'Tính năng thông báo đang phát triển')}
               >
                 {language === 'ja' ? '通知設定' : 'Cài đặt thông báo'}
               </AntButton>
-              
+
               <Divider className="my-2" />
-              
-              <AntButton 
-                danger 
+
+              <AntButton
+                danger
                 icon={<WarningOutlined />}
                 block
                 onClick={handleReportGroup}
               >
                 {language === 'ja' ? 'グループを報告' : 'Báo cáo nhóm'}
               </AntButton>
-              
-              <AntButton 
-                danger 
+
+              <AntButton
+                danger
                 icon={<LogoutOutlined />}
                 block
                 onClick={handleLeaveGroup}
@@ -1017,8 +1354,8 @@ export function GroupChatInterface({
         width={600}
         centered
         style={{ top: 20 }}
-        bodyStyle={{ 
-          maxHeight: 'calc(100vh - 250px)', 
+        bodyStyle={{
+          maxHeight: 'calc(100vh - 250px)',
           overflowY: 'auto',
           paddingTop: '16px',
           paddingBottom: '16px'
@@ -1038,8 +1375,8 @@ export function GroupChatInterface({
           {/* Selected count */}
           {selectedMembersToAdd.length > 0 && (
             <Tag color="blue">
-              {language === 'ja' 
-                ? `${selectedMembersToAdd.length}人選択中` 
+              {language === 'ja'
+                ? `${selectedMembersToAdd.length}人選択中`
                 : `Đã chọn ${selectedMembersToAdd.length} người`}
             </Tag>
           )}
@@ -1049,7 +1386,7 @@ export function GroupChatInterface({
             <Text type="secondary" className="block mb-3">
               {language === 'ja' ? '追加可能なメンバー' : 'Thành viên có thể thêm'}
             </Text>
-            
+
             {filteredAvailableTeachers.length === 0 ? (
               <Empty description={language === 'ja' ? '該当するメンバーがいません' : 'Không tìm thấy thành viên'} />
             ) : (
@@ -1058,30 +1395,28 @@ export function GroupChatInterface({
                   <div
                     key={teacher.id}
                     onClick={() => toggleMemberSelection(teacher.id)}
-                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                      selectedMembersToAdd.includes(teacher.id)
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedMembersToAdd.includes(teacher.id)
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                    }`}
+                      }`}
                   >
-                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                      selectedMembersToAdd.includes(teacher.id)
+                    <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${selectedMembersToAdd.includes(teacher.id)
                         ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
-                    }`}>
+                      }`}>
                       {selectedMembersToAdd.includes(teacher.id) && (
                         <span className="text-white text-xs">✓</span>
                       )}
                     </div>
-                    
-                    <AntAvatar 
-                      size={48} 
+
+                    <AntAvatar
+                      size={48}
                       src={teacher.avatar}
                       style={{ backgroundColor: getAvatarColor(teacher.id) }}
                     >
                       {teacher.name.charAt(0).toUpperCase()}
                     </AntAvatar>
-                    
+
                     <div className="flex-1">
                       <Text strong className="block">{teacher.name}</Text>
                       <Text type="secondary" className="text-sm">
@@ -1110,8 +1445,8 @@ export function GroupChatInterface({
           <AntButton key="close" onClick={() => setShowQRModal(false)}>
             {language === 'ja' ? '閉じる' : 'Đóng'}
           </AntButton>,
-          <AntButton 
-            key="copy" 
+          <AntButton
+            key="copy"
             type="primary"
             icon={<CopyOutlined />}
             onClick={handleCopyGroupLink}
@@ -1155,9 +1490,9 @@ export function GroupChatInterface({
             <Text type="secondary" className="text-xs block mb-1">
               {language === 'ja' ? 'グループリンク:' : 'Link nhóm:'}
             </Text>
-            <Text 
-              code 
-              copyable 
+            <Text
+              code
+              copyable
               className="text-xs"
               style={{ wordBreak: 'break-all' }}
             >

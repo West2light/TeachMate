@@ -20,10 +20,11 @@ import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
 import 'antd/dist/reset.css';
 
-type ViewType = 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications';
+type ViewType = 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications' | 'admin';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState<Teacher | null>(null);
   const [language, setLanguage] = useState<Language>('ja');
   const [activeView, setActiveView] = useState<ViewType>('home');
@@ -41,6 +42,13 @@ export default function App() {
 
   const toggleLanguage = () => {
     setLanguage(prev => prev === 'ja' ? 'vi' : 'ja');
+  };
+
+  const handleAdminLogin = () => {
+    setIsAdmin(true);
+    setIsAuthenticated(true);
+    setActiveView('admin');
+    toast.success('Admin login successful');
   };
 
   const handleLogin = (userData: { name: string; email: string; nationality: 'Japanese' | 'Vietnamese' }) => {
@@ -61,6 +69,7 @@ export default function App() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setIsAdmin(false);
     setCurrentUser(null);
     setActiveView('home');
     setChatTeacher(null);
@@ -111,8 +120,8 @@ export default function App() {
 
   const handleSendFriendRequest = (teacher: Teacher) => {
     toast.success(
-      language === 'ja' 
-        ? `${teacher.name}さんに友達リクエストを送信しました` 
+      language === 'ja'
+        ? `${teacher.name}さんに友達リクエストを送信しました`
         : `Đã gửi lời mời kết bạn đến ${teacher.name}`
     );
   };
@@ -121,8 +130,8 @@ export default function App() {
     const group = mockGroups.find(g => g.id === groupId);
     if (group) {
       toast.success(
-        language === 'ja' 
-          ? `${group.name}に参加しました` 
+        language === 'ja'
+          ? `${group.name}に参加しました`
           : `Đã tham gia ${group.name}`
       );
     }
@@ -137,14 +146,68 @@ export default function App() {
   };
 
   // Show login screen if not authenticated
-  if (!isAuthenticated || !currentUser) {
+  if (!isAuthenticated) {
     return (
       <>
         <div className="relative">
           <div className="absolute top-4 right-4 z-50">
             <LanguageToggle language={language} onToggle={toggleLanguage} />
           </div>
-          <LoginRegistration onLogin={handleLogin} language={language} />
+          <LoginRegistration
+            onLogin={handleLogin}
+            onAdminLogin={handleAdminLogin}
+            language={language}
+          />
+        </div>
+        <Toaster />
+      </>
+    );
+  }
+
+  // Admin Panel
+  if (isAdmin) {
+    return (
+      <>
+        <div className="h-screen flex flex-col bg-gray-100">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold">🛡️ TeachMate Admin Panel</h1>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto p-6">
+            <div className="max-w-7xl mx-auto">
+              <div className="bg-white rounded-lg shadow-md p-8">
+                <h2 className="text-2xl font-bold mb-4">Welcome, Administrator</h2>
+                <p className="text-gray-600 mb-6">You have successfully logged in to the admin dashboard.</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                    <h3 className="font-semibold text-lg">Total Users</h3>
+                    <p className="text-3xl font-bold text-blue-600">25</p>
+                  </div>
+                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
+                    <h3 className="font-semibold text-lg">Pending Reports</h3>
+                    <p className="text-3xl font-bold text-orange-600">6</p>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                    <h3 className="font-semibold text-lg">Active Groups</h3>
+                    <p className="text-3xl font-bold text-green-600">12</p>
+                  </div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold mb-2">Account Information</h3>
+                  <p className="text-sm">Email: admin@gmail.com</p>
+                  <p className="text-sm">Access Level: Full Control</p>
+                  <p className="text-sm">Status: Active</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <Toaster />
       </>
@@ -156,21 +219,21 @@ export default function App() {
     <>
       <div className="h-screen flex overflow-hidden">
         {/* Primary Navbar (1.5cm / ~80px) */}
-          <PrimaryNavbar
-            user={currentUser}
-            activeView={activeView}
-            onViewChange={handleViewChange}
-            onEditProfile={() => setIsEditingProfile(true)}
-            onLogout={handleLogout}
-            onViewNotifications={() => setActiveView('notifications')}
-            unreadNotificationsCount={notifications.filter(n => !n.isRead).length}
-            language={language}
-          />
+        <PrimaryNavbar
+          user={currentUser!}
+          activeView={activeView}
+          onViewChange={handleViewChange}
+          onEditProfile={() => setIsEditingProfile(true)}
+          onLogout={handleLogout}
+          onViewNotifications={() => setActiveView('notifications')}
+          unreadNotificationsCount={notifications.filter(n => !n.isRead).length}
+          language={language}
+        />
 
         {/* Secondary Sidebar (shown for chat and contacts views) */}
         {(activeView === 'chat' || activeView === 'contacts') && (
-      <SecondarySidebar
-        view={activeView as 'chat' | 'contacts'}
+          <SecondarySidebar
+            view={activeView as 'chat' | 'contacts'}
             language={language}
             friends={friends}
             groups={mockGroups}
@@ -197,7 +260,7 @@ export default function App() {
           <div className="flex-1 overflow-hidden">
             {activeView === 'home' && (
               <Homepage
-                user={currentUser}
+                user={currentUser!}
                 language={language}
                 teachers={mockTeachers}
                 groups={mockGroups}

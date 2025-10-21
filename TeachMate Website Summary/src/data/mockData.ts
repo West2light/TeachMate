@@ -1,5 +1,56 @@
 import { Teacher, ExchangeSession, Report, Appointment, Notification } from '../types';
 
+// ==================== ADMIN DATA ====================
+
+export const ADMIN_CREDENTIALS = {
+  username: "admin@gmail.com",
+  password: "admin123",
+};
+
+export interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  status: "active" | "inactive" | "banned";
+  joinDate: string;
+  lastActive: string;
+  reportCount: number;
+  isReported: boolean;
+}
+
+export interface AdminReport {
+  id: string;
+  userId: string;
+  reason: string;
+  description: string;
+  reportedAt: string;
+  status: "pending" | "resolved" | "dismissed";
+}
+
+export interface GroupChat {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  createdAt: string;
+  createdBy: string;
+  status: "active" | "inactive" | "archived";
+  reportCount: number;
+  isReported: boolean;
+}
+
+export interface GroupReport {
+  id: string;
+  groupId: string;
+  reason: string;
+  description: string;
+  reportedBy: string;
+  reportedAt: string;
+  status: "pending" | "resolved" | "dismissed";
+}
+
+// ==================== TEACHER DATA ====================
+
 export const mockTeachers: Teacher[] = [
   {
     id: '1',
@@ -625,4 +676,270 @@ export const mockNotifications: Notification[] = [
     isRead: true,
     createdAt: new Date('2025-10-14T16:00:00')
   }
+];
+
+// ==================== ADMIN PANEL DATA ====================
+
+// Convert Teachers to Admin Users
+export const MOCK_USERS: AdminUser[] = mockTeachers.map((teacher, index) => ({
+  id: teacher.id,
+  username: teacher.name.toLowerCase().replace(/\s+/g, '_'),
+  email: `${teacher.name.toLowerCase().replace(/\s+/g, '.')}@teachmate.com`,
+  status: index === 2 ? 'banned' : (index % 5 === 0 ? 'inactive' : 'active'),
+  joinDate: new Date(2024, Math.floor(index / 3), (index * 3 + 1) % 28 + 1).toISOString().split('T')[0],
+  lastActive: new Date(2025, 9, 21 - (index % 7)).toISOString().split('T')[0],
+  reportCount: index % 4 === 0 ? Math.floor(Math.random() * 3) + 1 : 0,
+  isReported: index % 4 === 0,
+}));
+
+export const MOCK_REPORTS: AdminReport[] = [
+  {
+    id: "r1",
+    userId: "3",
+    reason: "Spam",
+    description: "User is sending spam messages to multiple teachers",
+    reportedAt: "2025-10-20",
+    status: "pending",
+  },
+  {
+    id: "r2",
+    userId: "7",
+    reason: "Harassment",
+    description: "Harassing other users in group chats",
+    reportedAt: "2025-10-19",
+    status: "pending",
+  },
+  {
+    id: "r3",
+    userId: "11",
+    reason: "Inappropriate Content",
+    description: "Posting inappropriate educational content",
+    reportedAt: "2025-10-18",
+    status: "resolved",
+  },
+  {
+    id: "r4",
+    userId: "15",
+    reason: "Spam",
+    description: "Promotional spam in teaching groups",
+    reportedAt: "2025-10-17",
+    status: "pending",
+  },
+  {
+    id: "r5",
+    userId: "19",
+    reason: "Abuse",
+    description: "Abusive language towards Vietnamese teachers",
+    reportedAt: "2025-10-16",
+    status: "dismissed",
+  },
+  {
+    id: "r6",
+    userId: "23",
+    reason: "Misinformation",
+    description: "Spreading false teaching methods",
+    reportedAt: "2025-10-15",
+    status: "pending",
+  },
+];
+
+export const MOCK_GROUPS: GroupChat[] = [
+  {
+    id: "g1",
+    name: "Mathematics Education Exchange",
+    description: "A community for math teachers to share innovative teaching methods, problem-solving techniques, and curriculum ideas.",
+    memberCount: 124,
+    createdAt: "2024-01-10",
+    createdBy: "Yuki Tanaka",
+    status: "active",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g2",
+    name: "English Language Teachers Network",
+    description: "Connect with English teachers from Japan and Vietnam to exchange language teaching strategies and resources.",
+    memberCount: 256,
+    createdAt: "2024-02-15",
+    createdBy: "Linh Nguyen",
+    status: "active",
+    reportCount: 1,
+    isReported: true,
+  },
+  {
+    id: "g3",
+    name: "STEM Education Innovation",
+    description: "Explore cutting-edge STEM teaching approaches, technology integration, and hands-on learning experiences.",
+    memberCount: 189,
+    createdAt: "2024-03-20",
+    createdBy: "Kenji Sato",
+    status: "active",
+    reportCount: 2,
+    isReported: true,
+  },
+  {
+    id: "g4",
+    name: "Cultural Exchange in Education",
+    description: "Discuss cross-cultural teaching methods, student exchange programs, and building global awareness in classrooms.",
+    memberCount: 312,
+    createdAt: "2024-04-05",
+    createdBy: "Hiroshi Yamamoto",
+    status: "active",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g5",
+    name: "Arts & Creative Education",
+    description: "Share creative teaching ideas, art projects, music education strategies, and ways to foster creativity in students.",
+    memberCount: 98,
+    createdAt: "2024-05-10",
+    createdBy: "Mai Pham",
+    status: "active",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g6",
+    name: "History & Social Studies Forum",
+    description: "Exchange perspectives on teaching history, geography, and social studies from Japanese and Vietnamese contexts.",
+    memberCount: 167,
+    createdAt: "2024-06-05",
+    createdBy: "Hiroshi Yamamoto",
+    status: "active",
+    reportCount: 1,
+    isReported: true,
+  },
+  {
+    id: "g7",
+    name: "Science Lab Techniques",
+    description: "Share laboratory experiments, safety protocols, and hands-on science teaching methods.",
+    memberCount: 142,
+    createdAt: "2024-07-12",
+    createdBy: "Akiko Nakamura",
+    status: "active",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g8",
+    name: "Physical Education & Wellness",
+    description: "Discuss sports education, student fitness programs, and promoting healthy lifestyles.",
+    memberCount: 87,
+    createdAt: "2024-08-18",
+    createdBy: "Minh Vo",
+    status: "active",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g9",
+    name: "Technology in Classroom",
+    description: "Explore EdTech tools, digital literacy, and integrating technology into teaching.",
+    memberCount: 203,
+    createdAt: "2024-09-01",
+    createdBy: "Hung Tran",
+    status: "active",
+    reportCount: 3,
+    isReported: true,
+  },
+  {
+    id: "g10",
+    name: "Lesson Design Workshop",
+    description: "Collaborate on creating effective lesson plans, curriculum development, and assessment methods.",
+    memberCount: 176,
+    createdAt: "2024-10-05",
+    createdBy: "Aoi Suzuki",
+    status: "active",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g11",
+    name: "Inactive Study Group",
+    description: "Old study group no longer active",
+    memberCount: 12,
+    createdAt: "2024-01-20",
+    createdBy: "admin",
+    status: "inactive",
+    reportCount: 0,
+    isReported: false,
+  },
+  {
+    id: "g12",
+    name: "Spam Testing Group",
+    description: "Archived group used for spam",
+    memberCount: 3,
+    createdAt: "2024-02-10",
+    createdBy: "spam_user",
+    status: "archived",
+    reportCount: 5,
+    isReported: true,
+  },
+];
+
+export const MOCK_GROUP_REPORTS: GroupReport[] = [
+  {
+    id: "gr1",
+    groupId: "g2",
+    reason: "Inappropriate Content",
+    description: "Group contains inappropriate language learning discussions",
+    reportedBy: "Mai Pham",
+    reportedAt: "2025-10-20",
+    status: "pending",
+  },
+  {
+    id: "gr2",
+    groupId: "g3",
+    reason: "Spam",
+    description: "Excessive promotional content for online courses",
+    reportedBy: "Linh Nguyen",
+    reportedAt: "2025-10-19",
+    status: "pending",
+  },
+  {
+    id: "gr3",
+    groupId: "g3",
+    reason: "Harassment",
+    description: "Members harassing each other over teaching methods",
+    reportedBy: "Yuki Tanaka",
+    reportedAt: "2025-10-18",
+    status: "dismissed",
+  },
+  {
+    id: "gr4",
+    groupId: "g6",
+    reason: "Misinformation",
+    description: "Spreading incorrect historical information",
+    reportedBy: "Sakura Ishikawa",
+    reportedAt: "2025-10-17",
+    status: "pending",
+  },
+  {
+    id: "gr5",
+    groupId: "g9",
+    reason: "Spam",
+    description: "Group flooded with software advertisements",
+    reportedBy: "Hung Tran",
+    reportedAt: "2025-10-16",
+    status: "pending",
+  },
+  {
+    id: "gr6",
+    groupId: "g9",
+    reason: "Off-topic Content",
+    description: "Members posting unrelated content",
+    reportedBy: "Kenji Sato",
+    reportedAt: "2025-10-15",
+    status: "dismissed",
+  },
+  {
+    id: "gr7",
+    groupId: "g12",
+    reason: "Spam",
+    description: "Group created solely for spam distribution",
+    reportedBy: "admin",
+    reportedAt: "2025-10-14",
+    status: "resolved",
+  },
 ];

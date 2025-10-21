@@ -23,8 +23,8 @@ const { Text } = Typography;
 
 interface PrimaryNavbarProps {
   user: Teacher;
-  activeView: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications';
-  onViewChange: (view: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications') => void;
+  activeView: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications' | 'admin';
+  onViewChange: (view: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications' | 'admin') => void;
   onEditProfile: () => void;
   onLogout: () => void;
   onViewNotifications: () => void;

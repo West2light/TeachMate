@@ -109,9 +109,13 @@ export function AllGroups({
                 ? '検索条件を変更して再試行してください'
                 : 'Hãy thử thay đổi từ khóa tìm kiếm'}
             </p>
-            <Button variant="outline" onClick={() => setSearchQuery('')}>
+            <AntButton
+              type="default"
+              onClick={() => setSearchQuery('')}
+              className="!border-blue-200 hover:!border-blue-300"
+            >
               {language === 'ja' ? 'クリア' : 'Xóa tìm kiếm'}
-            </Button>
+            </AntButton>
           </div>
         ) : (
           <>
