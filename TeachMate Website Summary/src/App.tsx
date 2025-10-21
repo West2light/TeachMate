@@ -6,12 +6,15 @@ import { PrimaryNavbar } from './components/PrimaryNavbar';
 import { SecondarySidebar } from './components/SecondarySidebar';
 import { Homepage } from './components/Homepage';
 import { ChatInterface } from './components/ChatInterface';
+import { GroupChatInterface } from './components/GroupChatInterface';
 import { TeacherProfile } from './components/TeacherProfile';
 import { UserProfileEdit } from './components/UserProfileEdit';
 import { AllTeachers } from './components/AllTeachers';
 import { AllGroups } from './components/AllGroups';
 import { NotificationsPage } from './components/NotificationsPage';
 import { LanguageToggle } from './components/LanguageToggle';
+import { AddFriendModal } from './components/AddFriendModal';
+import { CreateGroupModal } from './components/CreateGroupModal';
 import { translations, Language } from './translations';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
@@ -26,7 +29,10 @@ export default function App() {
   const [activeView, setActiveView] = useState<ViewType>('home');
   const [selectedProfile, setSelectedProfile] = useState<Teacher | null>(null);
   const [chatTeacher, setChatTeacher] = useState<Teacher | null>(null);
+  const [chatGroup, setChatGroup] = useState<any>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
   const [friends, setFriends] = useState<Teacher[]>([mockTeachers[0], mockTeachers[2]]);
   const [friendRequests, setFriendRequests] = useState(mockFriendRequests);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
@@ -87,11 +93,20 @@ export default function App() {
     setActiveView(view);
     if (view !== 'chat') {
       setChatTeacher(null);
+      setChatGroup(null);
     }
   };
 
   const handleSelectChat = (teacher: Teacher) => {
     setChatTeacher(teacher);
+    setChatGroup(null);
+    setActiveView('chat');
+  };
+
+  const handleSelectGroup = (group: any) => {
+    setChatGroup(group);
+    setChatTeacher(null);
+    setActiveView('chat');
   };
 
   const handleSendFriendRequest = (teacher: Teacher) => {
@@ -114,11 +129,11 @@ export default function App() {
   };
 
   const handleAddFriend = () => {
-    toast.info(language === 'ja' ? '友達追加機能を準備中です' : 'Tính năng thêm bạn đang được phát triển');
+    setIsAddFriendModalOpen(true);
   };
 
   const handleCreateGroup = () => {
-    toast.info(language === 'ja' ? 'グループ作成機能を準備中です' : 'Tính năng tạo nhóm đang được phát triển');
+    setIsCreateGroupModalOpen(true);
   };
 
   // Show login screen if not authenticated
@@ -154,13 +169,14 @@ export default function App() {
 
         {/* Secondary Sidebar (shown for chat and contacts views) */}
         {(activeView === 'chat' || activeView === 'contacts') && (
-          <SecondarySidebar
-            view={activeView}
+      <SecondarySidebar
+        view={activeView as 'chat' | 'contacts'}
             language={language}
             friends={friends}
             groups={mockGroups}
             friendRequests={friendRequests}
             onSelectChat={handleSelectChat}
+            onSelectGroup={handleSelectGroup}
             onAddFriend={handleAddFriend}
             onCreateGroup={handleCreateGroup}
           />
@@ -238,11 +254,20 @@ export default function App() {
               />
             )}
 
-            {activeView === 'chat' && !chatTeacher && (
+            {activeView === 'chat' && chatGroup && (
+              <GroupChatInterface
+                currentUser={currentUser}
+                selectedGroup={chatGroup}
+                onBack={() => setChatGroup(null)}
+                language={language}
+              />
+            )}
+
+            {activeView === 'chat' && !chatTeacher && !chatGroup && (
               <div className="h-full flex items-center justify-center bg-gray-50">
                 <div className="text-center text-gray-500">
                   <p className="text-lg">{t.noConversations}</p>
-                  <p className="text-sm mt-2">{language === 'ja' ? '左側のリストから友達を選択してください' : 'Chọn một người bạn từ danh sách bên trái'}</p>
+                  <p className="text-sm mt-2">{language === 'ja' ? '左側のリストから友達またはグループを選択してください' : 'Chọn một người bạn hoặc nhóm từ danh sách bên trái'}</p>
                 </div>
               </div>
             )}
@@ -277,6 +302,25 @@ export default function App() {
         open={isEditingProfile}
         onClose={() => setIsEditingProfile(false)}
         onSave={handleSaveProfile}
+        language={language}
+      />
+
+      <AddFriendModal
+        open={isAddFriendModalOpen}
+        onClose={() => setIsAddFriendModalOpen(false)}
+        teachers={mockTeachers}
+        currentUserId={currentUser?.id || ''}
+        onSendFriendRequest={handleSendFriendRequest}
+        language={language}
+      />
+
+      <CreateGroupModal
+        open={isCreateGroupModalOpen}
+        onClose={() => setIsCreateGroupModalOpen(false)}
+        teachers={mockTeachers}
+        onCreateGroup={(name, memberIds) => {
+          toast.success(language === 'ja' ? `${name}を作成しました` : `Đã tạo nhóm ${name}`);
+        }}
         language={language}
       />
 

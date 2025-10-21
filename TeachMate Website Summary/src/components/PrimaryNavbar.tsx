@@ -23,8 +23,8 @@ const { Text } = Typography;
 
 interface PrimaryNavbarProps {
   user: Teacher;
-  activeView: 'home' | 'chat' | 'contacts' | 'notifications';
-  onViewChange: (view: 'home' | 'chat' | 'contacts' | 'notifications') => void;
+  activeView: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications';
+  onViewChange: (view: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications') => void;
   onEditProfile: () => void;
   onLogout: () => void;
   onViewNotifications: () => void;
@@ -70,7 +70,7 @@ export function PrimaryNavbar({
       icon: <SettingOutlined />
     },
     {
-      type: 'divider'
+      type: 'divider' as const
     },
     {
       key: 'logout',

@@ -26,6 +26,7 @@ interface SecondarySidebarProps {
   groups: Array<{ id: string; name: string; memberCount: number; avatar: string }>;
   friendRequests: Array<{ id: string; teacher: Teacher }>;
   onSelectChat: (teacher: Teacher) => void;
+  onSelectGroup: (group: { id: string; name: string; memberCount: number; avatar: string }) => void;
   onAddFriend: () => void;
   onCreateGroup: () => void;
 }
@@ -37,6 +38,7 @@ export function SecondarySidebar({
   groups,
   friendRequests,
   onSelectChat,
+  onSelectGroup,
   onAddFriend,
   onCreateGroup
 }: SecondarySidebarProps) {
@@ -151,6 +153,7 @@ export function SecondarySidebar({
             {groups.map((group) => (
               <button
                 key={group.id}
+                onClick={() => onSelectGroup(group)}
                 className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-blue-50 hover:shadow-sm transition-all border border-transparent hover:border-blue-200"
               >
                 <Avatar className="w-10 h-10 border-2 border-blue-100 flex-shrink-0">
@@ -306,6 +309,7 @@ export function SecondarySidebar({
               {groups.map((group) => (
                 <button
                   key={group.id}
+                  onClick={() => onSelectGroup(group)}
                   className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-green-50 hover:shadow-sm transition-all border border-transparent hover:border-green-200"
                 >
                   <Avatar className="w-10 h-10 border-2 border-green-100 flex-shrink-0">

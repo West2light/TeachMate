@@ -45,6 +45,14 @@ export function TeacherProfile({ teacher, open, onClose, onStartChat, language }
       open={open}
       onCancel={onClose}
       width={700}
+      centered
+      style={{ top: 20 }}
+      bodyStyle={{ 
+        maxHeight: 'calc(100vh - 250px)', 
+        overflowY: 'auto',
+        paddingTop: '16px',
+        paddingBottom: '16px'
+      }}
       title={t.teacherProfile}
       footer={[
         <AntButton

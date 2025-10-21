@@ -106,6 +106,14 @@ export function UserProfileEdit({ user, open, onClose, onSave, language }: UserP
       open={open}
       onCancel={onClose}
       width={800}
+      centered
+      style={{ top: 20 }}
+      bodyStyle={{ 
+        maxHeight: 'calc(100vh - 250px)', 
+        overflowY: 'auto',
+        paddingTop: '16px',
+        paddingBottom: '16px'
+      }}
       title={t.editProfile}
       footer={[
         <AntButton key="cancel" onClick={onClose}>
