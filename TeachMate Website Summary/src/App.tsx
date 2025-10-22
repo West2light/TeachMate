@@ -9,6 +9,7 @@ import { ChatInterface } from './components/ChatInterface';
 import { GroupChatInterface } from './components/GroupChatInterface';
 import { TeacherProfile } from './components/TeacherProfile';
 import { UserProfileEdit } from './components/UserProfileEdit';
+import { UserProfileView } from './components/UserProfileView';
 import { AllTeachers } from './components/AllTeachers';
 import { AllGroups } from './components/AllGroups';
 import { NotificationsPage } from './components/NotificationsPage';
@@ -18,6 +19,7 @@ import { CreateGroupModal } from './components/CreateGroupModal';
 import { translations, Language } from './translations';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 import 'antd/dist/reset.css';
 
 type ViewType = 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications' | 'admin';
@@ -32,6 +34,7 @@ export default function App() {
   const [chatTeacher, setChatTeacher] = useState<Teacher | null>(null);
   const [chatGroup, setChatGroup] = useState<any>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isViewingProfile, setIsViewingProfile] = useState(false);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
   const [friends, setFriends] = useState<Teacher[]>([mockTeachers[0], mockTeachers[2]]);
@@ -168,47 +171,7 @@ export default function App() {
   if (isAdmin) {
     return (
       <>
-        <div className="h-screen flex flex-col bg-gray-100">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 flex items-center justify-between shadow-lg">
-            <div className="flex items-center gap-4">
-              <h1 className="text-2xl font-bold">🛡️ TeachMate Admin Panel</h1>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              Logout
-            </button>
-          </div>
-          <div className="flex-1 overflow-auto p-6">
-            <div className="max-w-7xl mx-auto">
-              <div className="bg-white rounded-lg shadow-md p-8">
-                <h2 className="text-2xl font-bold mb-4">Welcome, Administrator</h2>
-                <p className="text-gray-600 mb-6">You have successfully logged in to the admin dashboard.</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                    <h3 className="font-semibold text-lg">Total Users</h3>
-                    <p className="text-3xl font-bold text-blue-600">25</p>
-                  </div>
-                  <div className="bg-orange-50 p-4 rounded-lg border-2 border-orange-200">
-                    <h3 className="font-semibold text-lg">Pending Reports</h3>
-                    <p className="text-3xl font-bold text-orange-600">6</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-200">
-                    <h3 className="font-semibold text-lg">Active Groups</h3>
-                    <p className="text-3xl font-bold text-green-600">12</p>
-                  </div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold mb-2">Account Information</h3>
-                  <p className="text-sm">Email: admin@gmail.com</p>
-                  <p className="text-sm">Access Level: Full Control</p>
-                  <p className="text-sm">Status: Active</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AdminDashboard onLogout={handleLogout} />
         <Toaster />
       </>
     );
@@ -223,6 +186,7 @@ export default function App() {
           user={currentUser!}
           activeView={activeView}
           onViewChange={handleViewChange}
+          onViewProfile={() => setIsViewingProfile(true)}
           onEditProfile={() => setIsEditingProfile(true)}
           onLogout={handleLogout}
           onViewNotifications={() => setActiveView('notifications')}
@@ -307,7 +271,7 @@ export default function App() {
 
             {activeView === 'chat' && chatTeacher && (
               <ChatInterface
-                currentTeacher={currentUser}
+                currentTeacher={currentUser!}
                 selectedTeacher={chatTeacher}
                 onBack={() => setChatTeacher(null)}
                 onViewProfile={setSelectedProfile}
@@ -319,7 +283,7 @@ export default function App() {
 
             {activeView === 'chat' && chatGroup && (
               <GroupChatInterface
-                currentUser={currentUser}
+                currentUser={currentUser!}
                 selectedGroup={chatGroup}
                 onBack={() => setChatGroup(null)}
                 language={language}
@@ -361,10 +325,17 @@ export default function App() {
       />
 
       <UserProfileEdit
-        user={currentUser}
+        user={currentUser!}
         open={isEditingProfile}
         onClose={() => setIsEditingProfile(false)}
         onSave={handleSaveProfile}
+        language={language}
+      />
+
+      <UserProfileView
+        user={currentUser!}
+        open={isViewingProfile}
+        onClose={() => setIsViewingProfile(false)}
         language={language}
       />
 

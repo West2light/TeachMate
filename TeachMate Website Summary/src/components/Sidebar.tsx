@@ -64,8 +64,7 @@ export function Sidebar({
   const navItems = [
     { key: 'teachers', label: t.teachers, icon: <TeamOutlined /> },
     { key: 'messages', label: t.messages, icon: <MessageOutlined /> },
-    { key: 'sessions', label: t.sessions, icon: <CalendarOutlined /> },
-    { key: 'admin', label: t.admin, icon: <SafetyOutlined /> }
+    { key: 'sessions', label: t.sessions, icon: <CalendarOutlined /> }
   ];
 
   return (

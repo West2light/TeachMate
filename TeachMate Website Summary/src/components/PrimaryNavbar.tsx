@@ -25,6 +25,7 @@ interface PrimaryNavbarProps {
   user: Teacher;
   activeView: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications' | 'admin';
   onViewChange: (view: 'home' | 'chat' | 'contacts' | 'all-teachers' | 'all-groups' | 'notifications' | 'admin') => void;
+  onViewProfile: () => void;
   onEditProfile: () => void;
   onLogout: () => void;
   onViewNotifications: () => void;
@@ -43,6 +44,7 @@ export function PrimaryNavbar({
   user,
   activeView,
   onViewChange,
+  onViewProfile,
   onEditProfile,
   onLogout,
   onViewNotifications,
@@ -56,7 +58,7 @@ export function PrimaryNavbar({
       key: 'profile',
       label: t.myProfile,
       icon: <UserOutlined />,
-      onClick: onEditProfile
+      onClick: onViewProfile
     },
     {
       key: 'edit',

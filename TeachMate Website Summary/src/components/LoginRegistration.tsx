@@ -6,7 +6,11 @@ import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { translations, Language } from '../translations';
 import { GraduationCap } from 'lucide-react';
-import { ADMIN_CREDENTIALS } from '../data/mockData';
+
+const ADMIN_CREDENTIALS = {
+  username: "admin@gmail.com",
+  password: "admin123",
+};
 
 interface LoginRegistrationProps {
   onLogin: (userData: {
